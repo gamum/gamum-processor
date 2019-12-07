@@ -21,6 +21,8 @@ public class GamumPdfParserImplTest {
     @Test
     public void extractText() throws IOException {
         GamumPdfParser parser = new GamumPdfParserImpl();
-        assertTrue(parser.extractText(dummy1).contains("Dummy PDF file"));
+        String actual = parser.extractText(dummy1);
+        assertTrue(actual.contains("Dummy PDF file"));
+        assertEquals("Dummy PDF file", actual.trim());
     }
 }
