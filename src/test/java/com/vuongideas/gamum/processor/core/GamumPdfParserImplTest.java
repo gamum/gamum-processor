@@ -1,5 +1,6 @@
 package com.vuongideas.gamum.processor.core;
 
+import com.vuongideas.gamum.processor.model.PdfData;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.ResourceUtils;
@@ -11,12 +12,16 @@ import static org.junit.Assert.*;
 
 public class GamumPdfParserImplTest {
 
+    GamumPdfParser parser;
+
     File dummy1;
     File greResearchValidityData;
     File pdfInfoAndTestFile;
 
     @Before
     public void setUp() throws Exception {
+        parser = new GamumPdfParserImpl();
+
         dummy1 = ResourceUtils.getFile("classpath:dummy.pdf");
         greResearchValidityData = ResourceUtils.getFile("classpath:gre_research_validity_data.pdf");
         pdfInfoAndTestFile = ResourceUtils.getFile("classpath:PDF_INFO_TEST_FILE.pdf");
@@ -24,9 +29,14 @@ public class GamumPdfParserImplTest {
 
     @Test
     public void extractText() throws IOException {
-        GamumPdfParser parser = new GamumPdfParserImpl();
         String actual = parser.extractText(dummy1);
         assertTrue(actual.contains("Dummy PDF file"));
         assertEquals("Dummy PDF file", actual.trim());
+    }
+
+    @Test
+    public void extractDataDummy() throws IOException {
+        PdfData data = parser.extractData(dummy1);
+        assertTrue(data.getContents().contains("Dummy PDF file"));
     }
 }
