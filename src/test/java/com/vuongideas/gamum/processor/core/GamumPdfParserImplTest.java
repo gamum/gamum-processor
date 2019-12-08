@@ -12,10 +12,14 @@ import static org.junit.Assert.*;
 public class GamumPdfParserImplTest {
 
     File dummy1;
+    File greResearchValidityData;
+    File pdfInfoAndTestFile;
 
     @Before
     public void setUp() throws Exception {
         dummy1 = ResourceUtils.getFile("classpath:dummy.pdf");
+        greResearchValidityData = ResourceUtils.getFile("classpath:gre_research_validity_data.pdf");
+        pdfInfoAndTestFile = ResourceUtils.getFile("classpath:PDF_INFO_TEST_FILE.pdf");
     }
 
     @Test
