@@ -1,7 +1,9 @@
 package com.vuongideas.gamum.processor.core;
 
 import com.vuongideas.gamum.processor.model.PdfData;
+import org.apache.pdfbox.contentstream.PDContentStream;
 import org.apache.pdfbox.cos.*;
+import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 @Component
 public class GamumPdfParserImpl implements GamumPdfParser {
@@ -25,21 +28,21 @@ public class GamumPdfParserImpl implements GamumPdfParser {
     public PdfData extractData(File file) throws IOException {
         PDDocument doc = PDDocument.load(file);
 
-        StringBuilder textContents = new StringBuilder();
+        StringBuilder contentsBuilder = new StringBuilder();
 
         for (PDPage page : doc.getPages()) {
-            COSDictionary objects = page.getCOSObject();
-            for (COSName key : objects.keySet()) {
-                COSBase item = objects.getItem(key);
-                if (item instanceof COSObject) {
-                    COSObject obj = (COSObject)item;
-                    obj.
+            PDFStreamParser parser = new PDFStreamParser(page);
+            parser.parse();
+            List<Object> tokens = parser.getTokens();
+            for (Object token : tokens) {
+                if (token instanceof COSString) {
+                    contentsBuilder.append(((COSString)token).getString());
                 }
             }
         }
 
         return PdfData.builder()
-                .contents(textContents.toString())
+                .contents(contentsBuilder.toString())
                 .build();
     }
 }

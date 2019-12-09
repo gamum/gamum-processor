@@ -17,6 +17,7 @@ public class GamumPdfParserImplTest {
     File dummy1;
     File greResearchValidityData;
     File pdfInfoAndTestFile;
+    File pdfTestWithImage;
 
     @Before
     public void setUp() throws Exception {
@@ -25,6 +26,7 @@ public class GamumPdfParserImplTest {
         dummy1 = ResourceUtils.getFile("classpath:dummy.pdf");
         greResearchValidityData = ResourceUtils.getFile("classpath:gre_research_validity_data.pdf");
         pdfInfoAndTestFile = ResourceUtils.getFile("classpath:PDF_INFO_TEST_FILE.pdf");
+        pdfTestWithImage = ResourceUtils.getFile("classpath:pdf-test.pdf");
     }
 
     @Test
@@ -38,5 +40,11 @@ public class GamumPdfParserImplTest {
     public void extractDataDummy() throws IOException {
         PdfData data = parser.extractData(dummy1);
         assertTrue(data.getContents().contains("Dummy PDF file"));
+    }
+
+    @Test
+    public void extractDataPdfTest() throws IOException {
+        PdfData data = parser.extractData(pdfTestWithImage);
+        assertNotNull(data);
     }
 }
