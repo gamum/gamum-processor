@@ -39,6 +39,7 @@ public class GamumPdfParserImplTest {
     @Test
     public void extractDataDummy() throws IOException {
         PdfData data = parser.extractData(dummy1);
+        System.out.println(data.getContents());
         assertTrue(data.getContents().contains("Dummy PDF file"));
     }
 
