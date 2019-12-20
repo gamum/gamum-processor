@@ -1,6 +1,8 @@
 package com.vuongideas.gamum.processor.core;
 
+import com.vuongideas.gamum.processor.model.ExtractedDocument;
 import com.vuongideas.gamum.processor.model.PdfData;
+import com.vuongideas.gamum.processor.model.fragment.ExtractedTextFragment;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.ResourceUtils;
@@ -29,23 +31,24 @@ public class GamumPdfParserImplTest {
         pdfTestWithImage = ResourceUtils.getFile("classpath:pdf-test.pdf");
     }
 
-    @Test
-    public void extractText() throws IOException {
-        String actual = parser.extractText(dummy1);
-        assertTrue(actual.contains("Dummy PDF file"));
-        assertEquals("Dummy PDF file", actual.trim());
-    }
 
     @Test
     public void extractDataDummy() throws IOException {
-        PdfData data = parser.extractData(dummy1);
-        System.out.println(data.getContents());
-        assertTrue(data.getContents().contains("Dummy PDF file"));
+        ExtractedDocument document = parser.extractDocument(dummy1);
+
+        String text = document.getFragments().stream()
+                .filter(f -> f instanceof ExtractedTextFragment)
+                .map(f -> ((ExtractedTextFragment) f).getText())
+                .reduce("", (a, b) -> a + b);
+
+        System.out.println(text);
+
+        assertTrue(text.contains("Dummy PDF file"));
     }
 
     @Test
     public void extractDataPdfTest() throws IOException {
-        PdfData data = parser.extractData(pdfTestWithImage);
-        assertNotNull(data);
+        ExtractedDocument document = parser.extractDocument(pdfTestWithImage);
+        assertNotNull(document);
     }
 }

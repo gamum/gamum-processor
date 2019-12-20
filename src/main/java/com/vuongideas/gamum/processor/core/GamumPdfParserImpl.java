@@ -1,6 +1,9 @@
 package com.vuongideas.gamum.processor.core;
 
+import com.vuongideas.gamum.processor.model.ExtractedDocument;
 import com.vuongideas.gamum.processor.model.PdfData;
+import com.vuongideas.gamum.processor.model.fragment.ExtractedFragment;
+import com.vuongideas.gamum.processor.model.fragment.ExtractedTextFragment;
 import org.apache.fontbox.cmap.CMap;
 import org.apache.pdfbox.contentstream.PDContentStream;
 import org.apache.pdfbox.cos.*;
@@ -15,8 +18,10 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
@@ -24,18 +29,12 @@ import java.util.stream.StreamSupport;
 public class GamumPdfParserImpl implements GamumPdfParser {
 
     @Override
-    public String extractText(File file) throws IOException {
-        PDDocument doc = PDDocument.load(file);
-        return new PDFTextStripper().getText(doc);
-    }
-
-    @Override
-    public PdfData extractData(File file) throws IOException {
+    public ExtractedDocument extractDocument(File file) throws IOException {
         PDDocument doc = PDDocument.load(file);
 
         StringBuilder contentsBuilder = new StringBuilder();
 
-        // get cmaps
+        List<ExtractedFragment> fragments = new ArrayList<>();
 
         for (PDPage page : doc.getPages()) {
 
@@ -48,6 +47,7 @@ public class GamumPdfParserImpl implements GamumPdfParser {
                             return null;
                         }
                     })
+                    .filter(Objects::nonNull)
                     .findFirst()
                     .orElseThrow(IOException::new);
 
@@ -59,12 +59,16 @@ public class GamumPdfParserImpl implements GamumPdfParser {
                     for (byte b : ((COSString)token).getBytes()) {
                         contentsBuilder.append(font.toUnicode(b));
                     }
+                    fragments.add(ExtractedTextFragment.builder()
+                            .text(contentsBuilder.toString())
+                            .build());
+                    contentsBuilder.setLength(0);
                 }
             }
         }
 
-        return PdfData.builder()
-                .contents(contentsBuilder.toString())
+        return ExtractedDocument.builder()
+                .fragments(fragments)
                 .build();
     }
 }
