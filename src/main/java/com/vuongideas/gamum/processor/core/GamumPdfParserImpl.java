@@ -33,24 +33,25 @@ public class GamumPdfParserImpl implements GamumPdfParser {
     public ExtractedDocument extractDocument(File file) throws IOException {
         PDDocument doc = PDDocument.load(file);
 
-        List<ExtractedFragment> fragments = new ArrayList<>();
+        PageExtractor extractor = new PageExtractor();
 
         for (PDPage page : doc.getPages()) {
-            PDFStreamParser parser = new PDFStreamParser(page);
-            parser.parse();
-            List<Object> tokens = parser.getTokens();
-            for (Object token : tokens) {
-                if (token instanceof COSString) {
-                    handleString((COSString)token, fragments, page);
-                } else if (token instanceof COSArray) {
-                    handleArray((COSArray)token, fragments, page);
-                }
-            }
+
+            extractor.processPage(page);
+
+//            PDFStreamParser parser = new PDFStreamParser(page);
+//            parser.parse();
+//            List<Object> tokens = parser.getTokens();
+//            for (Object token : tokens) {
+//                if (token instanceof COSString) {
+//                    handleString((COSString)token, fragments, page);
+//                } else if (token instanceof COSArray) {
+//                    handleArray((COSArray)token, fragments, page);
+//                }
+//            }
         }
 
-        return ExtractedDocument.builder()
-                .fragments(fragments)
-                .build();
+        return extractor.buildDocument();
     }
 
     private void handleString(COSString stringToken, List<ExtractedFragment> fragments, PDPage page) throws IOException {
