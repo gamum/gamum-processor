@@ -1,5 +1,6 @@
 package com.vuongideas.gamum.processor.core;
 
+import com.vuongideas.gamum.processor.core.textdecoder.UnicodeTextDecoder;
 import com.vuongideas.gamum.processor.model.ExtractedDocument;
 import com.vuongideas.gamum.processor.model.PdfData;
 import com.vuongideas.gamum.processor.model.fragment.ExtractedFragment;
@@ -32,37 +33,17 @@ public class GamumPdfParserImpl implements GamumPdfParser {
     public ExtractedDocument extractDocument(File file) throws IOException {
         PDDocument doc = PDDocument.load(file);
 
-        StringBuilder contentsBuilder = new StringBuilder();
-
         List<ExtractedFragment> fragments = new ArrayList<>();
 
         for (PDPage page : doc.getPages()) {
-
-            PDFont font = StreamSupport.stream(page.getResources().getFontNames().spliterator(), false)
-                    .map(fn -> {
-                        try {
-                            return page.getResources().getFont(fn);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElseThrow(IOException::new);
-
             PDFStreamParser parser = new PDFStreamParser(page);
             parser.parse();
             List<Object> tokens = parser.getTokens();
             for (Object token : tokens) {
                 if (token instanceof COSString) {
-                    for (byte b : ((COSString)token).getBytes()) {
-                        contentsBuilder.append(font.toUnicode(b));
-                    }
-                    fragments.add(ExtractedTextFragment.builder()
-                            .text(contentsBuilder.toString())
-                            .build());
-                    contentsBuilder.setLength(0);
+                    handleString((COSString)token, fragments, page);
+                } else if (token instanceof COSArray) {
+                    handleArray((COSArray)token, fragments, page);
                 }
             }
         }
@@ -70,5 +51,19 @@ public class GamumPdfParserImpl implements GamumPdfParser {
         return ExtractedDocument.builder()
                 .fragments(fragments)
                 .build();
+    }
+
+    private void handleString(COSString stringToken, List<ExtractedFragment> fragments, PDPage page) throws IOException {
+        fragments.add(ExtractedTextFragment.builder()
+                .text(new UnicodeTextDecoder(page).decode(stringToken))
+                .build());
+    }
+
+    private void handleArray(COSArray arrayToken, List<ExtractedFragment> fragments, PDPage page) throws IOException {
+        for (Object token : arrayToken.toList()) {
+            if (token instanceof COSString) {
+                handleString((COSString)token, fragments, page);
+            }
+        }
     }
 }
