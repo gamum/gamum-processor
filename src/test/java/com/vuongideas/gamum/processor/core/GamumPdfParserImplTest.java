@@ -23,7 +23,7 @@ public class GamumPdfParserImplTest {
 
     @Before
     public void setUp() throws Exception {
-        parser = new GamumPdfParserImpl();
+        parser = new GamumPdfParserImpl(new PageExtractor());
 
         dummy1 = ResourceUtils.getFile("classpath:dummy.pdf");
         greResearchValidityData = ResourceUtils.getFile("classpath:gre_research_validity_data.pdf");

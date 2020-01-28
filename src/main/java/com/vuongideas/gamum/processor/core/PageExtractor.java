@@ -13,12 +13,16 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.springframework.stereotype.Component;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class PageExtractor extends PDFStreamEngine {
 
     private List<ExtractedFragment> fragments = new ArrayList<>();
@@ -62,7 +66,10 @@ public class PageExtractor extends PDFStreamEngine {
                 // same image to local
                 BufferedImage bImage = new BufferedImage(imageWidth,imageHeight,BufferedImage.TYPE_INT_ARGB);
                 bImage = image.getImage();
-                fragments.add(ExtractedImageFragment.builder().imageData(bImage).build());
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ImageIO.write(bImage, "png", bos);
+
+                fragments.add(ExtractedImageFragment.builder().imageData(bos.toByteArray()).build());
 
             }
             else if(xobject instanceof PDFormXObject)
